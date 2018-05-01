@@ -1,0 +1,86 @@
+
+#allText {
+    text-align: center;
+    font-family: 'Quicksand', sans-serif;
+
+    font-size: 30px;
+}
+
+#allText h2{
+    font-size: 130%;
+    color: #6D82F0;
+}
+
+
+/*-------------------------Banner Div -------------------------  */
+#banner {
+    background-color: #5160B1;
+    color: white;
+    padding: 10px 10px 20px 10px;
+}
+
+#banner h1 {
+    font-size: 175%;
+    
+}
+
+
+
+
+/*-------------------------Docket Div -------------------------  */
+#docket {
+    color: #5160B1;
+    padding-bottom: 60px;
+    padding-top: 30px;
+}
+
+#docket h2 {
+    padding-bottom: 15px;
+}
+
+#docketInput {
+    height: 70px;
+    border-radius: 20px;
+    border-color: #6D82F0;
+    width: 500px;
+    border-style: solid;
+    padding-left: 20px;
+}
+
+#docketInput:hover {
+    border-color: #4F5FB7;
+}
+
+#docketSubmit {
+    border-radius: 90px;
+    border:none;
+    color:white;
+    background-color: #6D82F0;
+    height: 70px;
+    width: 180px;
+    letter-spacing: 1px;
+    box-shadow: 2px 3px 6px #7C7C7C;
+}
+
+#docketSubmit:hover {
+    background: #4F5FB7;
+}
+
+/*-------------------------Debit Div -------------------------  */
+#debit {
+    color: #5160B1;
+}
+
+#debitNote{
+    border:none;
+    font-family: "Roboto Mono", sans-serif;
+    background-color: #6D82F0;
+    color: white;
+    font-size: 300%;
+    border-radius: 20px;
+    margin-top: 20px;
+    padding: 20px 40px 20px 40px;
+    width: 700px;
+    height: 150px;
+}
+
