@@ -1,26 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Debit Note Generator</title>
-  <meta charset="utf-8">
- <link rel="stylesheet" href="main.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debit Note Generator</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="main.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta">
-    <style>
-    <link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
-     </style>
-	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-  <script src="jquery-3.1.1.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="debit.js"></script>
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta">
+<style>
+<link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
+ </style>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!--  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>-->
+    
+
+<script src="debit.js"></script>
+
+ 
+
+   
+ 
 </head> 
 
 <body>
 <div id="allText">
+    
     <div id="banner">
         <h1>Debit Note Generator</h1>
     </div>
@@ -29,15 +39,129 @@
     <div id="docket">
         <h2>Enter Docket Number</h2>
         <input type="text" id="docketInput" placeholder="Enter docket number">
-        <button type="button" id="docketSubmit">Submit</button>
+        <button type="button" id="docketSubmit" onclick="writeUserData()">Submit</button>
     </div>
     
     <div id="debit">
         <h2>Debit Note Number</h2>
-        <button type="button" id="debitNote">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</button>
+        <button type="button" id="debitNote"></button>
     </div>
     
+    <div id="status">
+        <h3 id="message"></h3>
+    </div>
+        
+    
+    
+    
+    
 </div>
-
 </body>  
+
+    
+    
+    
+    
+    
+    
+    
+
+<!-- ----------- Javascript Below! ------------------------>
+    
+<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+
+<script>
+    
+// ----------- Initialize Firebase ------------------------
+var config = {
+    apiKey: "AIzaSyCGyUsYxNKILp_hUic8V4KpNfLQD4PE4R4",
+    authDomain: "generator2-3bd14.firebaseapp.com",
+    databaseURL: "https://generator2-3bd14.firebaseio.com",
+    projectId: "generator2-3bd14",
+    storageBucket: "generator2-3bd14.appspot.com",
+    messagingSenderId: "853003593831"
+};
+
+firebase.initializeApp(config);
+
+// Get a reference to the database service
+const database = firebase.database();
+    
+// ------------------------------------------------------
+const dockets = database.ref("database");
+const lastDebitWrite = database.ref("lastDebit");
+const lastDebitRead = database.ref("lastDebit/num");
+    
+
+function displayLast() {   
+ 
+    var returnValue;
+    
+    lastDebitRead.on("value", function(snapshot) {
+        returnValue = snapshot.val();
+        
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
+    
+    console.log("Returning: " + returnValue);
+    return returnValue;
+                       
+}
+                                  
+                                  
+    
+displayLast();
+
+       
+
+$("#docketInput").keyup(function(event) {
+    if (event.keyCode === 13) {
+        writeUserData();
+    }
+});
+
+function writeUserData() {
+    
+    var docketNumber = document.getElementById("docketInput").value;
+    
+    if (docketNumber === "") {
+        console.log("Empty String!");
+    } 
+   
+    var debitNumber = Number(displayLast());
+    var newDebitNumber = (debitNumber + 1);
+    
+    lastDebitWrite.set({
+        num: newDebitNumber
+    });
+    
+    // Push to Dockets
+    dockets.push().set({
+        docketNumber: docketNumber,
+        debitNumber: newDebitNumber
+    });
+
+    document.getElementById("debitNote").innerHTML = newDebitNumber;
+    
+    sendMessage(docketNumber, newDebitNumber);
+
+
+}
+    
+function sendMessage(docket, debit){
+    
+    document.getElementById("message").innerHTML = ("Set docket to: " + docket + " and debit to: " + debit);
+    
+    $("#status").hide();
+    $("#status").toggle('slide');
+    
+}
+
+ 
+
+    
+    
+</script>
+    
 </html>

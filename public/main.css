@@ -2,13 +2,17 @@
 #allText {
     text-align: center;
     font-family: 'Quicksand', sans-serif;
-
     font-size: 30px;
 }
 
 #allText h2{
     font-size: 130%;
-    color: #6D82F0;
+    color: #5160B1;
+}
+
+#allText h3{
+    font-size: 130%;
+    color: #5160B1;
 }
 
 
@@ -48,7 +52,7 @@
 }
 
 #docketInput:hover {
-    border-color: #4F5FB7;
+    border-color: black;
 }
 
 #docketSubmit {
@@ -78,9 +82,26 @@
     color: white;
     font-size: 300%;
     border-radius: 20px;
-    margin-top: 20px;
+/*    margin-top: 20px;*/
     padding: 20px 40px 20px 40px;
     width: 700px;
     height: 150px;
+    font-size: 130px;
+    margin-bottom: 20px;
+    line-height:0px;
+    
 }
+
+
+#debitNote:hover {
+    background: #4F5FB7;
+}
+
+/*-------------------------Status Div -------------------------  */
+
+#message {
+    font-style: italic;
+}
+
+
 
