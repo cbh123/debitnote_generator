@@ -17,15 +17,13 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-<!--  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>-->
+<!--
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
+-->
 
 <script src="debit.js"></script>
 
- 
-
-   
- 
 </head> 
 
 <body>
@@ -33,7 +31,15 @@
     
     <div id="banner">
         <h1>Debit Note Generator</h1>
+        
+            <button type ="button" id="homeButton" onclick="homePage()" style="background-color:#3D4782;">Home</button>
+        
+            <button type ="button" id="searchButton" onclick="searchPage()">Search</button>
     </div>
+
+
+       
+  
    
     
     <div id="docket">
@@ -50,29 +56,37 @@
     <div id="status">
         <h3 id="message"></h3>
     </div>
-        
     
+    <div id="searchStation" style="display:none;">
+        <p3>Search By<br></p3>
+            <select name="searchType">
+                <option value="byDocket">Docket Numbers</option>
+                <option value="byDebit">Debit Notes</option>
+            </select>
+        <br>
+        <p3>for</p3>
+        <br>
+        <input type="text" id="searchInput">
+        <br>
+        <button type="button" id="go">Search</button>
     
-    
+    </div>
+ 
+    <br>
+
+   
     
 </div>
 </body>  
 
-    
-    
-    
-    
-    
-    
-    
 
-<!-- ----------- Javascript Below! ------------------------>
+<!------------- Javascript Below! ------------------------>
     
 <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
 
 <script>
     
-// ----------- Initialize Firebase ------------------------
+// ----------- INITIALIZE FIREBASE -----------------
 var config = {
     apiKey: "AIzaSyCGyUsYxNKILp_hUic8V4KpNfLQD4PE4R4",
     authDomain: "generator2-3bd14.firebaseapp.com",
@@ -84,17 +98,25 @@ var config = {
 
 firebase.initializeApp(config);
 
-// Get a reference to the database service
-const database = firebase.database();
     
-// ------------------------------------------------------
+// --------------SETUP REFERENCES-------------------
+
+const database = firebase.database();
 const dockets = database.ref("database");
 const lastDebitWrite = database.ref("lastDebit");
 const lastDebitRead = database.ref("lastDebit/num");
     
+// ------------------FUNCTIONS---------------------   
+    
+/************************************************
+Function: displayLast()
 
+Info: Pulls from the database and returns the 
+last debit number. 
+
+***********************************************/
 function displayLast() {   
- 
+   
     var returnValue;
     
     lastDebitRead.on("value", function(snapshot) {
@@ -108,55 +130,132 @@ function displayLast() {
     return returnValue;
                        
 }
-                                  
-                                  
     
+function findLast() {   
+   
+    var returnValue;
+    
+    dockets.on("value", function(snapshot) {
+        for (var x in snapshot.val()){
+              console.log(x);
+            
+        }
+      
+        returnValue = snapshot.val();
+        
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
+    
+    console.log("Returning: " + returnValue);
+    return returnValue;
+}
+
+findLast();
+/*
+Right now this is a work-around. For some reason
+if we don't call this then the first returned 
+value from the database is Nan.
+*/ 
 displayLast();
 
        
-
+/*
+Detect whether user presses enter rather than clicking submit. 
+*/ 
 $("#docketInput").keyup(function(event) {
     if (event.keyCode === 13) {
         writeUserData();
     }
 });
 
+/************************************************
+Function: writeUerData() 
+
+Info: This function writes to the database the new docket and debit data. It does this by setting the docket number to user input ("docketInput") and debit number to the read-in debit number from the firebase database and then adding one. It then calls the send message function which sets the alert message on completion. 
+************************************************/ 
 function writeUserData() {
     
+    // Get docket number from user input 
     var docketNumber = document.getElementById("docketInput").value;
     
     if (docketNumber === "") {
-        console.log("Empty String!");
-    } 
+        sendMessage(false,"","");
+    } else {
    
-    var debitNumber = Number(displayLast());
-    var newDebitNumber = (debitNumber + 1);
-    
-    lastDebitWrite.set({
-        num: newDebitNumber
-    });
-    
-    // Push to Dockets
-    dockets.push().set({
-        docketNumber: docketNumber,
-        debitNumber: newDebitNumber
-    });
+        // Get debit number from displayLast() function
+        var debitNumber = Number(displayLast());
+        var newDebitNumber = (debitNumber + 1);
 
-    document.getElementById("debitNote").innerHTML = newDebitNumber;
-    
-    sendMessage(docketNumber, newDebitNumber);
+        // Update new debit number in DB
+        lastDebitWrite.set({
+            num: newDebitNumber
+        });
 
+        // Push to Dockets
+        dockets.push().set({
+            docketNumber: docketNumber,
+            debitNumber: newDebitNumber
+        });
 
+        // Send info to be printed
+        sendMessage(true, docketNumber, newDebitNumber);
+    }
 }
     
-function sendMessage(docket, debit){
+/************************************************
+Function: sendMessage(docket, debit)
+
+@docket: docket number.
+@debit: debit number.
+
+Info: sets the status message html to show the 
+updates to the database. Also sets the debit note
+to correct and update number.
+***********************************************/
+function sendMessage(success, docket, debit){
     
+    if (success) {
+    
+    // Sets debit number html
+    document.getElementById("debitNote").innerHTML = debit;
+    
+    // Sets docket and debit numbers
     document.getElementById("message").innerHTML = ("Set docket to: " + docket + " and debit to: " + debit);
     
+//    $("#debitNote").effect("bounce", { times:1 }, 200);
+    // Slides in new status
     $("#status").hide();
     $("#status").toggle('slide');
+        
+    } else {
+        
+     // Sets debit number html
+    document.getElementById("debitNote").innerHTML = ("N/A");
+    
+    document.getElementById("message").innerHTML = ("Must enter a docket number!");
+        
+    }
     
 }
+    
+function searchPage(){
+    $("#docket").hide();
+    $("#debit").hide();
+    $("#searchStation").show();
+    $("#searchButton").css({"background-color":"#3D4782"});
+    $("#homeButton").css({"background-color":"#9BABFF"});
+}
+    
+function homePage(){
+    $("#docket").show();
+    $("#debit").show();
+    $("#searchStation").hide();
+    $("#searchButton").css({"background-color":"#9BABFF"});
+    $("#homeButton").css({"background-color":"#3D4782"});
+}
+    
+
 
  
 
