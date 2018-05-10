@@ -37,10 +37,6 @@
             <button type ="button" id="searchButton" onclick="searchPage()">Search</button>
     </div>
 
-
-       
-  
-   
     
     <div id="docket">
         <h2>Enter Docket Number</h2>
@@ -58,8 +54,8 @@
     </div>
     
     <div id="searchStation" style="display:none;">
-        <p3>Search By<br></p3>
-            <select name="searchType">
+        <p3>Search in<br></p3>
+            <select name="searchType" id="searchType">
                 <option value="byDocket">Docket Numbers</option>
                 <option value="byDebit">Debit Notes</option>
             </select>
@@ -68,11 +64,14 @@
         <br>
         <input type="text" id="searchInput">
         <br>
-        <button type="button" id="go">Search</button>
-    
+        <button type="button" id="go" onclick="parseSearch()">Search</button>
     </div>
  
     <br>
+    
+    <div id="searchStatus" style="display:none;">
+        <h3 id="message"></h3>
+    </div>
 
    
     
@@ -127,31 +126,108 @@ function displayLast() {
     });
     
     console.log("Returning: " + returnValue);
-    return returnValue;
-                       
+    return returnValue;                   
 }
     
-function findLast() {   
-   
-    var returnValue;
+function parseSearch() {
+    var searchType = $("#searchType").val();
+    
+    searchBy(searchType);
+}
+    
+    
+function searchBy(type) {   
+
+    var searchVal =  $("#searchInput").val();
+    var searchingBy = "/docketNumber";
+    var searchingFor = "/debitNumber";
+    var isItByDocket = true;
+    
+    if (type === "byDebit") {
+        searchingBy = "/debitNumber";
+        searchingFor = "/docketNumber";
+        isItByDocket = false;
+    }
+    
+    var html1 = "";
+    var html2 = "";
+    
+    var debit = "";
+    var debits = new Array();
+    var docket = "";
+    
+    var matchFound = false;
     
     dockets.on("value", function(snapshot) {
-        for (var x in snapshot.val()){
-              console.log(x);
-            
-        }
-      
-        returnValue = snapshot.val();
-        
-    }, function (errorObject) {
-        console.log("The read failed: " + errorObject.code);
-    });
-    
-    console.log("Returning: " + returnValue);
-    return returnValue;
-}
 
-findLast();
+        for (var id in snapshot.val()){
+            
+            var docketRef = database.ref("database/" + id + searchingBy);
+
+            docketRef.on("value", function(snapshot) {
+
+                docket = String(snapshot.val());
+
+                if (searchVal === docket) {
+                    
+                    matchFound = true;
+                    
+                    console.log("We got a match!");
+                    console.log("And docket is:" + docket);
+                      
+                    var debitNumberRef = database.ref("database/" + id + searchingFor); 
+                    
+                    debitNumberRef.on("value", function(snapshot) {
+                        
+                        debit = snapshot.val();
+                        debits.push(debit);
+                  
+                        
+                    });  
+    console.log("Searchval is: " + searchVal);
+    console.log("Debit is: " + debit);
+    console.log("Docket is: " + docket);
+
+    if (isItByDocket) {
+        html1 = ("For docket number: " + docket);
+        html2 = ("The associated debit note is: " + debits);
+
+    } else if (!isItByDocket) {
+        html1 = ("For debit number: " + docket);
+        html2 = ("The associated docket note is: " + debits);
+    }
+
+    console.log(html1 + html2);
+    console.log(debits);
+
+    $("#searchStatus").show();
+    $("#searchStatus").html(html1 + "<br>" + html2);
+
+                }
+            });
+        }
+    
+  
+    }); 
+      if (!matchFound) {
+        html1 = ("Could not find value in the database.");
+        html2 = ("");
+        $("#searchStatus").show();
+        $("#searchStatus").html(html1 + "<br>" + html2);
+      }
+
+}
+    
+function displayResults(val1, val2){
+    
+    
+    
+}
+ 
+
+    
+    
+    
 /*
 Right now this is a work-around. For some reason
 if we don't call this then the first returned 
@@ -238,10 +314,27 @@ function sendMessage(success, docket, debit){
     }
     
 }
+
+    
+//function searchByDocket(docket) {
+//    const dockets = database.ref("database");
+//    
+//    
+//    
+//    
+//    
+//    
+//}
+//    
+    
+    
+    
+    
     
 function searchPage(){
     $("#docket").hide();
     $("#debit").hide();
+    $("#status").hide();
     $("#searchStation").show();
     $("#searchButton").css({"background-color":"#3D4782"});
     $("#homeButton").css({"background-color":"#9BABFF"});
@@ -250,6 +343,7 @@ function searchPage(){
 function homePage(){
     $("#docket").show();
     $("#debit").show();
+    $("#searchStatus").hide();
     $("#searchStation").hide();
     $("#searchButton").css({"background-color":"#9BABFF"});
     $("#homeButton").css({"background-color":"#3D4782"});
