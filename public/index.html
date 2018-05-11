@@ -46,7 +46,7 @@
     
     <div id="debit">
         <h2>Debit Note Number</h2>
-        <button type="button" id="debitNote"></button>
+        <textarea readonly id="debitNote" onclick="copy()"></textarea>
     </div>
     
     <div id="status">
@@ -57,7 +57,7 @@
         <p3>Search in<br></p3>
             <select name="searchType" id="searchType">
                 <option value="byDocket">Docket Numbers</option>
-                <option value="byDebit">Debit Notes</option>
+                <option value="byDebit">&nbsp &nbsp &nbspDebit Notes</option>
             </select>
         <br>
         <p3>for</p3>
@@ -138,7 +138,7 @@ function parseSearch() {
     
 function searchBy(type) {   
 
-    var searchVal =  $("#searchInput").val();
+    var searchVal =  $("#searchInput").val().replace(/ /g,'');;
     var searchingBy = "/docketNumber";
     var searchingFor = "/debitNumber";
     var isItByDocket = true;
@@ -218,11 +218,6 @@ function searchBy(type) {
 
 }
     
-function displayResults(val1, val2){
-    
-    
-    
-}
  
 
     
@@ -244,6 +239,19 @@ $("#docketInput").keyup(function(event) {
         writeUserData();
     }
 });
+    
+$("#searchInput").keyup(function(event) {
+    if (event.keyCode === 13) {
+        parseSearch();
+    }
+});
+    
+function copy() {
+    var copyText = $("#debitNote");
+    copyText.select();
+    document.execCommand("Copy");
+    alert("Copied the text: " + $("#debitNote").html());
+}
 
 /************************************************
 Function: writeUerData() 
@@ -253,7 +261,7 @@ Info: This function writes to the database the new docket and debit data. It doe
 function writeUserData() {
     
     // Get docket number from user input 
-    var docketNumber = document.getElementById("docketInput").value;
+    var docketNumber = $("#docketInput").val();
     
     if (docketNumber === "") {
         sendMessage(false,"","");
@@ -293,41 +301,27 @@ function sendMessage(success, docket, debit){
     
     if (success) {
     
-    // Sets debit number html
-    document.getElementById("debitNote").innerHTML = debit;
-    
-    // Sets docket and debit numbers
-    document.getElementById("message").innerHTML = ("Set docket to: " + docket + " and debit to: " + debit);
-    
-//    $("#debitNote").effect("bounce", { times:1 }, 200);
-    // Slides in new status
-    $("#status").hide();
-    $("#status").toggle('slide');
+        // Sets debit number html
+        $("#debitNote").html(debit);
+
+        // Sets docket and debit numbers
+        $("#message").html("Set docket to: " + docket + " and debit to: " + debit);
+
+        // Slides in new status
+        $("#status").hide();
+        $("#status").toggle('slide');
+        $("#searchStatus").hide();
         
     } else {
         
-     // Sets debit number html
-    document.getElementById("debitNote").innerHTML = ("N/A");
-    
-    document.getElementById("message").innerHTML = ("Must enter a docket number!");
+         // Sets debit number html to NA
+        $("#debitNote").html("N/A");
+        $("#message").html("Must enter a docket number!");
         
     }
     
 }
 
-    
-//function searchByDocket(docket) {
-//    const dockets = database.ref("database");
-//    
-//    
-//    
-//    
-//    
-//    
-//}
-//    
-    
-    
     
     
     
