@@ -37,6 +37,7 @@
             <button type ="button" id="searchButton" onclick="searchPage()">Search</button>
     </div>
 
+    <div id="homePage">
     
     <div id="docket">
         <h2>Enter Docket Number</h2>
@@ -50,6 +51,14 @@
     </div>
     
     <div id="status">
+        <h3 id="message"></h3>
+    </div>
+        
+    </div>
+    
+    <div id="searchPage">
+        
+    <div id="searchStatus" style="display:none;">
         <h3 id="message"></h3>
     </div>
     
@@ -69,8 +78,8 @@
  
     <br>
     
-    <div id="searchStatus" style="display:none;">
-        <h3 id="message"></h3>
+   
+        
     </div>
 
    
@@ -128,17 +137,49 @@ function displayLast() {
     console.log("Returning: " + returnValue);
     return returnValue;                   
 }
-    
+
+/************************************************
+Function: parseSearch()
+
+Info: Checks the search type and sends to searchBy
+function.
+
+***********************************************/
 function parseSearch() {
     var searchType = $("#searchType").val();
-    
     searchBy(searchType);
 }
     
-    
+   
+/********************************************************
+Function: searchBy(type)
+
+@type: the type of search we are doing (by docket
+or by debit)
+
+Info: This function searches by either docket or
+debit and returns corresponding docket or debit numbers.
+It works by taking a reference to database and 
+looping through the entire reference, finding 
+matches along the way, and then displaying them.
+
+********************************************************/
 function searchBy(type) {   
 
+    /* 
+    searchVal is the value of the input that the user is 
+    searching for, with spaces stripped.
+    */
     var searchVal =  $("#searchInput").val().replace(/ /g,'');;
+    
+    /*
+    Here we define the reference to what we are searching 
+    by vs. what we are searching for. If we are searching 
+    by docket numbers, it means we are inputting a docket
+    number and looking for corresponding debit numbers. 
+    The default is to search by docket, unless the type 
+    input parameter is specified as by debit. 
+    */
     var searchingBy = "/docketNumber";
     var searchingFor = "/debitNumber";
     var isItByDocket = true;
@@ -149,6 +190,7 @@ function searchBy(type) {
         isItByDocket = false;
     }
     
+    // Initialize variables.
     var html1 = "";
     var html2 = "";
     
@@ -156,8 +198,10 @@ function searchBy(type) {
     var debits = new Array();
     var docket = "";
     
+    // Assume no match will be found.
     var matchFound = false;
     
+    // Dockets here refers to database of dockets / deb numbers.
     dockets.on("value", function(snapshot) {
 
         for (var id in snapshot.val()){
@@ -165,62 +209,43 @@ function searchBy(type) {
             var docketRef = database.ref("database/" + id + searchingBy);
 
             docketRef.on("value", function(snapshot) {
-
                 docket = String(snapshot.val());
 
+                // If we get a match!
                 if (searchVal === docket) {
-                    
                     matchFound = true;
-                    
-                    console.log("We got a match!");
-                    console.log("And docket is:" + docket);
                       
                     var debitNumberRef = database.ref("database/" + id + searchingFor); 
                     
                     debitNumberRef.on("value", function(snapshot) {
-                        
                         debit = snapshot.val();
-                        debits.push(debit);
-                  
-                        
+                        debits.push(debit);  
                     });  
-    console.log("Searchval is: " + searchVal);
-    console.log("Debit is: " + debit);
-    console.log("Docket is: " + docket);
+                    
+                    if (isItByDocket) {
+                        html1 = ("For docket number: " + docket);
+                        html2 = ("The associated debit note is: " + debits);
 
-    if (isItByDocket) {
-        html1 = ("For docket number: " + docket);
-        html2 = ("The associated debit note is: " + debits);
+                    } else if (!isItByDocket) {
+                        html1 = ("For debit number: " + docket);
+                        html2 = ("The associated docket note is: " + debits);
+                    }
 
-    } else if (!isItByDocket) {
-        html1 = ("For debit number: " + docket);
-        html2 = ("The associated docket note is: " + debits);
-    }
-
-    console.log(html1 + html2);
-    console.log(debits);
-
-    $("#searchStatus").show();
-    $("#searchStatus").html(html1 + "<br>" + html2);
+                    $("#searchStatus").show();
+                    $("#searchStatus").html(html1 + "<br>" + html2);
 
                 }
             });
         }
-    
-  
     }); 
-      if (!matchFound) {
+    
+    if (!matchFound) {
         html1 = ("Could not find value in the database.");
         html2 = ("");
         $("#searchStatus").show();
         $("#searchStatus").html(html1 + "<br>" + html2);
-      }
-
+    }
 }
-    
- 
-
-    
     
     
 /*
@@ -245,12 +270,19 @@ $("#searchInput").keyup(function(event) {
         parseSearch();
     }
 });
-    
+ 
+/************************************************
+Function: copy()
+
+Info: Copies the value that is in the debit
+note number box.
+
+***********************************************/
 function copy() {
     var copyText = $("#debitNote");
     copyText.select();
     document.execCommand("Copy");
-    alert("Copied the text: " + $("#debitNote").html());
+    alert("Copied " + $("#debitNote").html() + " to clipboard!");
 }
 
 /************************************************
@@ -324,7 +356,13 @@ function sendMessage(success, docket, debit){
 
     
     
-    
+/************************************************
+Function: searchPage()
+
+Info: Hides everything from main page and shows 
+everything on search page.
+
+***********************************************/ 
 function searchPage(){
     $("#docket").hide();
     $("#debit").hide();
@@ -334,6 +372,14 @@ function searchPage(){
     $("#homeButton").css({"background-color":"#9BABFF"});
 }
     
+/************************************************
+Function: homePage()
+
+Info: Hides everything from search page and shows 
+everything on home page. Could be abstracted 
+into one function later.
+
+***********************************************/ 
 function homePage(){
     $("#docket").show();
     $("#debit").show();
