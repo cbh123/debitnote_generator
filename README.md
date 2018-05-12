@@ -1,4 +1,4 @@
-# debitnote_generator
+# Debit Note Generator
 
 Generates a docket number for a given debit note by interacting with a firebase DB.
 
